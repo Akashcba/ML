@@ -2,19 +2,13 @@ import os
 import pandas as pd
 from sklearn import model_selection
 
-'''
-- binary classification
-- multi class classification
-- multi label classification
-- single column regression
-- multi column regression
-- hold out => Very usefull in time series data(Make shuffle = False) => and for large datasets.
-'''
 
 TRAINING_DATA = os.environ.get("TRAINING_DATA")
 PROBLEM_TYPE = os.environ.get("PROBLEM_TYPE")
 LABEL_DELIMETER = os.environ.get("LABEL_DELIMETER")
 TARGET_COLS = list((os.environ.get("TARGET_COLS").split(" ") ))
+NUM_FOLDS = int(os.environ.get("NUM_FOLDS"))
+#BINS = int(os.environ.get("BINS"))
 
 class CrossValidation:
     def __init__(
@@ -24,6 +18,7 @@ class CrossValidation:
             shuffle=True, 
             problem_type="binary_classification",
             multilabel_delimiter=",",
+            regression_bins = 20,
             num_folds=5,
             random_state=42
         ):
@@ -35,7 +30,7 @@ class CrossValidation:
         self.shuffle = shuffle
         self.random_state = random_state
         self.multilabel_delimiter = multilabel_delimiter
-
+        self.regression_bins = regression_bins
         
         self.dataframe["kfold"] = -1
     
@@ -60,7 +55,17 @@ class CrossValidation:
             if self.num_targets < 2 and self.problem_type == "multi_col_regression":
                 raise Exception("Invalid number of targets for this problem type")
             ### Changes ...
-            kf = model_selection.KFold(n_splits=self.num_folds)
+            ## Implementation of Sorted Stratified Kfold for regression
+            ## https://github.com/biocore/calour/blob/master/calour/training.py#L144
+            ## Better implementation above
+            self.dataframe.sort_values(self.target_cols,ascending=True, inplace=True)
+            for i in range(0,num_samples,self.kfolds):
+                k_counter = 0
+                for j in range(i,min(i+self.kfolds,num_samples)):
+                    self.df.loc[j,'kfolds'] = k_counter
+                    k_counter +=1
+            # ......... Updated For Regression
+            kf = model_selection.StratifiedKFold(n_splits=self.num_folds, shuffle=self.shuffle, random_state=self.random_state)
             for fold, (train_idx, val_idx) in enumerate(kf.split(X=self.dataframe)):
                 self.dataframe.loc[val_idx, 'kfold'] = fold
         
@@ -83,13 +88,12 @@ class CrossValidation:
 
         return self.dataframe
 
-
 if __name__ == "__main__":
     df = pd.read_csv(TRAINING_DATA)
-    print(TARGET_COLS, len(TARGET_COLS))
-    print(PROBLEM_TYPE)
-    cv = CrossValidation(df, shuffle=True, target_cols=TARGET_COLS, 
-                         problem_type=PROBLEM_TYPE, multilabel_delimiter=LABEL_DELIMETER)
+#    print(TARGET_COLS, len(TARGET_COLS))
+#    print(PROBLEM_TYPE)
+    cv = CrossValidation(df, shuffle=True, num_folds=NUM_FOLDS, target_cols=TARGET_COLS, 
+                         problem_type=PROBLEM_TYPE, multilabel_delimiter=LABEL_DELIMETER ) #regression_bins=BINS)
     df_split = cv.split()
     print(df_split.head())
     print(df_split.kfold.value_counts())
