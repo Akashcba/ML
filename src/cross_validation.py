@@ -8,7 +8,6 @@ PROBLEM_TYPE = os.environ.get("PROBLEM_TYPE")
 LABEL_DELIMETER = os.environ.get("LABEL_DELIMETER")
 TARGET_COLS = list((os.environ.get("TARGET_COLS").split(" ") ))
 NUM_FOLDS = int(os.environ.get("NUM_FOLDS"))
-#BINS = int(os.environ.get("BINS"))
 
 class CrossValidation:
     def __init__(
@@ -18,7 +17,6 @@ class CrossValidation:
             shuffle=True, 
             problem_type="binary_classification",
             multilabel_delimiter=",",
-            regression_bins = 20,
             num_folds=5,
             random_state=42
         ):
@@ -30,7 +28,6 @@ class CrossValidation:
         self.shuffle = shuffle
         self.random_state = random_state
         self.multilabel_delimiter = multilabel_delimiter
-        self.regression_bins = regression_bins
         
         self.dataframe["kfold"] = -1
     
@@ -93,7 +90,7 @@ if __name__ == "__main__":
 #    print(TARGET_COLS, len(TARGET_COLS))
 #    print(PROBLEM_TYPE)
     cv = CrossValidation(df, shuffle=True, num_folds=NUM_FOLDS, target_cols=TARGET_COLS, 
-                         problem_type=PROBLEM_TYPE, multilabel_delimiter=LABEL_DELIMETER ) #regression_bins=BINS)
+                         problem_type=PROBLEM_TYPE, multilabel_delimiter=LABEL_DELIMETER )
     df_split = cv.split()
     print(df_split.head())
     print(df_split.kfold.value_counts())

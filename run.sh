@@ -14,7 +14,7 @@ export PROBLEM_TYPE="binary_classification"
 export TARGET_COLS="target"
 export LABEL_DELIMETER=" "
 export NUM_FOLDS="5"
-#export BINS="20"
+
 
 export MODEL=$1
 
