@@ -1,4 +1,5 @@
 import os
+import time
 import pandas as pd
 from sklearn import model_selection
 
@@ -86,6 +87,8 @@ class CrossValidation:
         return self.dataframe
 
 if __name__ == "__main__":
+    print("\nExecuting the Cross_Val Module.")
+    time.sleep(7)
     df = pd.read_csv(TRAINING_DATA)
 #    print(TARGET_COLS, len(TARGET_COLS))
 #    print(PROBLEM_TYPE)

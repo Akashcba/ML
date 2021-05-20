@@ -1,4 +1,5 @@
 import os
+import time
 import pandas as pd
 from sklearn import preprocessing
 
@@ -14,14 +15,18 @@ FOLD = int(os.environ.get("FOLD"))
 MODEL = os.environ.get("MODEL")
 
 Fold_Mapping = {
-    0 : [1,2,3,4],
-    1 : [0,2,3,4],
-    2 : [0,1,3,4],
-    3 : [0,1,2,4],
-    4 : [0,1,2,3]
+    0 : [1,2,3,4,5,6],
+    1 : [0,2,3,4,5,6],
+    2 : [0,1,3,4,5,6],
+    3 : [0,1,2,4,5,6],
+    4 : [0,1,2,3,5,6],
+    5 : [0,1,2,3,4,6],
+    6 : [0,1,2,3,4,5]
 }
 
 if __name__ == "__main__":
+    print("\nExecuting the Train Module")
+    time.sleep(1)
     df = pd.read_csv(TRAINING_DATA)
     df_test = pd.read_csv(TEST_DATA)
     train_df = df[df.kfold.isin(Fold_Mapping.get(FOLD))].reset_index(drop=True)
@@ -38,6 +43,7 @@ if __name__ == "__main__":
 ## Add Same column sequence in both
     valid_df = valid_df[train_df.columns]
 
+    '''
     label_encoders ={}
     for c in train_df.columns:
         lbl = preprocessing.LabelEncoder()
@@ -51,6 +57,7 @@ if __name__ == "__main__":
         train_df.loc[:, c] = lbl.transform(train_df[c].values.tolist())
         valid_df.loc[:, c] = lbl.transform(valid_df[c].values.tolist())
         label_encoders[c] = lbl
+    '''
     # Data is ready to train
     clf = dispatcher.MODELS[MODEL]
     clf.fit(train_df, ytrain)
@@ -59,6 +66,5 @@ if __name__ == "__main__":
     print("Accuracy : ", metrics.roc_auc_score(yvalid, preds))
 
     ## Storing the data for predict.py
-    joblib.dump(label_encoders, f"/Users/my_mac/Documents/Machine Learning/ML/models/{MODEL}_{FOLD}_label_encoder.pkl")
+    
     joblib.dump(clf, f"/Users/my_mac/Documents/Machine Learning/ML/models/{MODEL}_{FOLD}.pkl")
-    joblib.dump(train_df.columns, f"/Users/my_mac/Documents/Machine Learning/ML/models/{MODEL}_{FOLD}_columns.pkl")
