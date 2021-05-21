@@ -1,4 +1,4 @@
-
+from sklearn import metrics as skmetrics
 '''
 Binary Classification Metrics
 -> Accuracy
@@ -43,10 +43,55 @@ Given any + sample from the dataset and any - sample in the dataset
 what is the prob that the + sample will rank higher than - sample
 this values is the AUC
 '''
-# LogLoss
+# LogLoss => Lower logloss is better
 '''
 logloss = -(y.log(P) + (1-y).log(1-P)); P = prediction
 Penalizes quite high for wrong prediction.
 For all samples is just average of individual sample loglosses
 '''
 
+class ClassificationMetrics:
+    def __init__(self):
+        self.metrics = {
+            "accuracy" : self._accuracy ,
+            "f1" : self._f1,
+            "precision" : self_precision,
+            "recall" : self._recall
+        }
+    
+    def __call__(self, metric, y_true, y_pred, y_proba=None):
+        if metric not in self.metrics:
+            raise Exception("Metric not implemented")
+        if metric == "auc":
+            if y_proba is not None:
+                return self._auc(y_true=y_true, y_pred=y_proba)
+            else:
+                raise Exception("y_proba cannot be None for AUC")
+        elif metric == "logloss":
+            if y_proba is not None:
+                return self._logloss(y_true=y_true, y_pred=y_proba)
+            else:
+                raise Exception("y_proba cannot be None for logloss")
+        else:
+            return self.metrics[metric](y_true=y_true, y_pred=y_pred)
+
+    @staticmethod()
+    def _accuracy(y_true, y_pred):
+        return skmetrics.accuracy_score(y_true=y_true, y_pred=y_pred)
+    @staticmethod()
+    def _f1(y_true, y_pred):
+        return skmetrics.f1_score(y_true=y_true, y_pred=y_pred)
+    @staticmethod()
+    def _recall(y_true, y_pred):
+        return skmetrics.recall_score(y_true=y_true, y_pred=y_pred)
+    @staticmethod()
+    def _precision(y_true, y_pred):
+        return skmetrics.precision_score(y_true=y_true, y_pred=y_pred)
+
+# AUC requires Probability score .......
+    @staticmethod()
+    def _auc(y_true, y_pred):
+        return skmetrics.roc_auc_score(y_true=y_true, y_pred=y_pred)
+    @staticmethod
+    def _logloss(y_true, y_pred): # Lower Logloss is better
+        return skmetrics.log_loss(y_true=y_true, y_pred=y_pred)
