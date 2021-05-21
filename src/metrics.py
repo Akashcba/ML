@@ -53,10 +53,10 @@ For all samples is just average of individual sample loglosses
 class ClassificationMetrics:
     def __init__(self):
         self.metrics = {
-            "accuracy" : self._accuracy ,
-            "f1" : self._f1,
-            "precision" : self._precision,
-            "recall" : self._recall,
+            "accuracy": self._accuracy,
+            "f1": self._f1,
+            "precision": self._precision,
+            "recall": self._recall,
             "auc": self._auc,
             "logloss": self._logloss
         }
@@ -78,22 +78,25 @@ class ClassificationMetrics:
             return self.metrics[metric](y_true=y_true, y_pred=y_pred)
 
     @staticmethod
+    def _auc(y_true, y_pred):
+        return skmetrics.roc_auc_score(y_true=y_true, y_score=y_pred)
+
+    @staticmethod
     def _accuracy(y_true, y_pred):
         return skmetrics.accuracy_score(y_true=y_true, y_pred=y_pred)
+    
     @staticmethod
     def _f1(y_true, y_pred):
         return skmetrics.f1_score(y_true=y_true, y_pred=y_pred)
+    
     @staticmethod
     def _recall(y_true, y_pred):
         return skmetrics.recall_score(y_true=y_true, y_pred=y_pred)
+    
     @staticmethod
     def _precision(y_true, y_pred):
         return skmetrics.precision_score(y_true=y_true, y_pred=y_pred)
-
-# AUC requires Probability score .......
+    
     @staticmethod
-    def _auc(y_true, y_pred):
-        return skmetrics.roc_auc_score(y_true=y_true, y_pred=y_pred)
-    @staticmethod
-    def _logloss(y_true, y_pred): # Lower Logloss is better
+    def _logloss(y_true, y_pred):
         return skmetrics.log_loss(y_true=y_true, y_pred=y_pred)
